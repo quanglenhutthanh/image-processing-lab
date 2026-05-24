@@ -1,0 +1,16 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Env / editor
+.env
+.env.local
+.DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json
