@@ -9,8 +9,8 @@ Tracking against the phases in [`prd.md`](./prd.md).
 | 2 | Histogram & RGB channels | ✅ Done — 2026-05-24 |
 | 3 | Arithmetic & logic (L5) | ✅ Done — 2026-05-24 |
 | 4 | Denoise & restoration (L7) | ✅ Done — 2026-05-24 |
-| 5 | Morphology (L8) | ⬜ Not started |
-| 6 | Edge detection (L9) | ⬜ Not started |
+| 5 | Morphology (L8) | ✅ Done — 2026-05-25 |
+| 6 | Edge detection (L9) | ✅ Done — 2026-05-25 |
 | 7 | Finishing | ⬜ Not started |
 
 ---
@@ -141,7 +141,57 @@ Phase 4 (restoration), 5 (morphology), 6 (edges), 7 (snippets/download/README).
   with an "(assumed PSF)" hint in the UI (PRD §8).
 - Noise is freshly randomized each click (no seed) so repeated clicks differ.
 
-## Next up — Phase 5 (Morphology, L8)
-- BE: dilate/erode/open/close, structuring element (square/rect/ellipse/cross +
-  size), binary threshold (`operations/morphology.py`)
-- FE: Morphology panel (SE shape + size)
+## Phase 5 — Morphology (L8) ✅ (2026-05-25)
+
+- [x] **T5.1** BE dilate/erode/opening/closing (`operations/morphology.py`)
+- [x] **T5.2** BE `cv2.getStructuringElement` — square/rect/ellipse/cross + size
+- [x] **T5.3** BE binary threshold (`cv2.threshold`, optional Otsu)
+- [x] **T5.4** FE Morphology section (SE shape + size + 4 ops) and Threshold section (slider + Otsu)
+
+**Process ops added:** `dilate`, `erode`, `opening`, `closing`, `threshold`.
+
+**Verified (TestClient)**
+- Dilate grows white px (397→493), erode shrinks (→308); open/close via `morphologyEx`
+- SE shapes give distinct kernels: square (5×5), rect (5×2), ellipse/cross use
+  `MORPH_ELLIPSE`/`MORPH_CROSS`
+- Threshold → binary {0,255}; Otsu on a color image auto-picks t=100 (and grays first)
+- Frontend `npm run build` passes
+
+**Notes**
+- `rect` is intentionally non-square (w × w⁄2) so the anisotropic SE is visible
+  next to `square`.
+- Morphology ops keep separate keys from restoration's min/max (which also use
+  erode/dilate but with a plain box kernel) — different semantics, different ops.
+- The `blobs` sample (binary) is the natural image for demoing morphology.
+
+## Phase 6 — Edge detection (L9) ✅ (2026-05-25)
+
+- [x] **T6.1** BE Sobel (x/y/magnitude); Prewitt & Roberts via `cv2.filter2D` manual kernels
+- [x] **T6.2** BE Canny (low/high thresholds + optional Gaussian pre-blur by σ)
+- [x] **T6.3** BE Laplacian and LoG (Gaussian → Laplacian) — `operations/edges.py`
+- [x] **T6.4** FE Edges section (Sobel direction + Prewitt/Roberts/Laplacian/LoG) and Canny section (low/high/σ)
+
+**Process ops added:** `sobel`, `prewitt`, `roberts`, `canny`, `laplacian`, `log`.
+**Total registered ops: 35.**
+
+**Verified**
+- TestClient: all operators return single-channel L9 results; color input
+  auto-grays; Canny output strictly {0,255}; Prewitt/Roberts snippets use `filter2D`
+- HTTP+CORS (urllib): canny + sobel return 200 with ACAO header
+- Frontend `npm run build` passes
+
+**Notes**
+- Edges run on grayscale (color converted first); gradient magnitudes are
+  normalized to 0-255 for display, Canny is already binary.
+- Prewitt/Roberts use manual kernels (no single OpenCV function) per PRD §8.
+
+## Full v1 milestone reached ✅
+All feature phases (1-6) complete: representation, arithmetic/logic, histogram/
+channels, restoration, morphology, edges. Remaining: **Phase 7 (finishing)** —
+code-snippet UI, result download, README, end-to-end polish.
+
+## Next up — Phase 7 (Finishing)
+- BE: `core/snippets.py` (centralize per-op snippets, currently inline in ops)
+- FE: CodeSnippet component (show snippet + lecture label), download result
+- README run instructions (root README already covers this), E2E pass
+- (Nice to have) multi-op pipeline + undo/history

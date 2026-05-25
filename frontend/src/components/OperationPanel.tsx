@@ -29,6 +29,27 @@ const FILTERS: { op: string; label: string }[] = [
   { op: "midpoint_filter", label: "Midpoint" },
 ];
 
+const SE_SHAPES = [
+  { id: "square", label: "Square" },
+  { id: "rect", label: "Rect" },
+  { id: "ellipse", label: "Ellipse" },
+  { id: "cross", label: "Cross" },
+];
+
+const MORPH_OPS: { op: string; label: string }[] = [
+  { op: "dilate", label: "Dilate" },
+  { op: "erode", label: "Erode" },
+  { op: "opening", label: "Opening" },
+  { op: "closing", label: "Closing" },
+];
+
+const EDGE_OPS: { op: string; label: string }[] = [
+  { op: "prewitt", label: "Prewitt" },
+  { op: "roberts", label: "Roberts" },
+  { op: "laplacian", label: "Laplacian" },
+  { op: "log", label: "LoG" },
+];
+
 type Props = {
   current: ImagePayload;
   busy: boolean;
@@ -61,6 +82,16 @@ export default function OperationPanel({ current, busy, onApply, onError }: Prop
   const [spAmount, setSpAmount] = useState(0.05);
   const [filterOp, setFilterOp] = useState("mean_filter");
   const [ksize, setKsize] = useState(3);
+
+  const [seShape, setSeShape] = useState("square");
+  const [seSize, setSeSize] = useState(3);
+  const [threshVal, setThreshVal] = useState(127);
+  const [otsu, setOtsu] = useState(false);
+
+  const [sobelDir, setSobelDir] = useState("magnitude");
+  const [cannyLow, setCannyLow] = useState(50);
+  const [cannyHigh, setCannyHigh] = useState(150);
+  const [cannySigma, setCannySigma] = useState(1);
 
   useEffect(() => {
     listSamples().then(setSamples).catch(() => {});
@@ -300,6 +331,132 @@ export default function OperationPanel({ current, busy, onApply, onError }: Prop
           Wiener deblur
         </button>
         <span className="text-xs text-slate-400">(assumed PSF)</span>
+      </Section>
+
+      <Section title="Morphology (L8)">
+        <select
+          value={seShape}
+          onChange={(e) => setSeShape(e.target.value)}
+          className="rounded border border-slate-300 px-2 py-1 text-sm text-slate-600"
+        >
+          {SE_SHAPES.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          size
+          <input
+            type="range"
+            min={3}
+            max={21}
+            step={2}
+            value={seSize}
+            onChange={(e) => setSeSize(Number(e.target.value))}
+          />
+          <span className="w-12 font-mono">
+            {seSize}×{seSize}
+          </span>
+        </label>
+        <div className="flex flex-wrap gap-1">
+          {MORPH_OPS.map(({ op, label }) => (
+            <button
+              key={op}
+              type="button"
+              disabled={busy}
+              onClick={() => onApply(op, { shape: seShape, ksize: seSize })}
+              className="rounded-md border border-slate-300 px-2.5 py-1 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Threshold (L8)">
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          t
+          <input
+            type="range"
+            min={0}
+            max={255}
+            step={1}
+            value={threshVal}
+            disabled={otsu}
+            onChange={(e) => setThreshVal(Number(e.target.value))}
+          />
+          <span className="w-8 font-mono">{otsu ? "auto" : threshVal}</span>
+        </label>
+        <button
+          type="button"
+          onClick={() => setOtsu((v) => !v)}
+          className={`rounded-md px-3 py-1.5 text-sm ${otsu ? "bg-blue-600 text-white" : "border border-slate-300 text-slate-600"}`}
+        >
+          Otsu
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onApply("threshold", { thresh: threshVal, otsu })}
+          className={primaryBtn}
+        >
+          Threshold
+        </button>
+      </Section>
+
+      <Section title="Edges (L9)">
+        <select
+          value={sobelDir}
+          onChange={(e) => setSobelDir(e.target.value)}
+          className="rounded border border-slate-300 px-2 py-1 text-sm text-slate-600"
+        >
+          <option value="x">Sobel x</option>
+          <option value="y">Sobel y</option>
+          <option value="magnitude">Sobel magnitude</option>
+        </select>
+        <button type="button" disabled={busy} onClick={() => onApply("sobel", { direction: sobelDir })} className={primaryBtn}>
+          Sobel
+        </button>
+        <div className="flex flex-wrap gap-1">
+          {EDGE_OPS.map(({ op, label }) => (
+            <button
+              key={op}
+              type="button"
+              disabled={busy}
+              onClick={() => onApply(op)}
+              className="rounded-md border border-slate-300 px-2.5 py-1 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Canny (L9)">
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          low
+          <input type="range" min={0} max={255} value={cannyLow} onChange={(e) => setCannyLow(Number(e.target.value))} />
+          <span className="w-8 font-mono">{cannyLow}</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          high
+          <input type="range" min={0} max={255} value={cannyHigh} onChange={(e) => setCannyHigh(Number(e.target.value))} />
+          <span className="w-8 font-mono">{cannyHigh}</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          σ
+          <input type="range" min={0} max={3} step={0.1} value={cannySigma} onChange={(e) => setCannySigma(Number(e.target.value))} />
+          <span className="w-8 font-mono">{cannySigma}</span>
+        </label>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onApply("canny", { low: cannyLow, high: cannyHigh, sigma: cannySigma })}
+          className={primaryBtn}
+        >
+          Canny
+        </button>
       </Section>
     </div>
   );

@@ -212,17 +212,17 @@ image-processing-lab/
 - [x] **T4.4** BE: Wiener deblur (scikit-image).
 - [x] **T4.5** FE: Restoration panel (add-noise buttons, filter selector + kernel size slider).
 
-### 🟢 Phase 5 — Morphology (L8, ~1 day)
-- [ ] **T5.1** BE: `operations/morphology.py` — dilate/erode/open/close.
-- [ ] **T5.2** BE: `cv2.getStructuringElement` (square/rect/ellipse/cross + size).
-- [ ] **T5.3** BE: binary thresholding (`cv2.threshold`).
-- [ ] **T5.4** FE: Morphology panel (choose SE shape + size).
+### ✅ Phase 5 — Morphology (L8, ~1 day) — **DONE**
+- [x] **T5.1** BE: `operations/morphology.py` — dilate/erode/open/close.
+- [x] **T5.2** BE: `cv2.getStructuringElement` (square/rect/ellipse/cross + size).
+- [x] **T5.3** BE: binary thresholding (`cv2.threshold`).
+- [x] **T5.4** FE: Morphology panel (choose SE shape + size).
 
-### 🟢 Phase 6 — Edge detection (L9, ~1 day)
-- [ ] **T6.1** BE: `operations/edges.py` — Sobel/Prewitt/Roberts.
-- [ ] **T6.2** BE: Canny (low/high threshold + sigma).
-- [ ] **T6.3** BE: Laplacian / LoG.
-- [ ] **T6.4** FE: Edge panel (choose operator + parameters).
+### ✅ Phase 6 — Edge detection (L9, ~1 day) — **DONE**
+- [x] **T6.1** BE: `operations/edges.py` — Sobel/Prewitt/Roberts.
+- [x] **T6.2** BE: Canny (low/high threshold + sigma).
+- [x] **T6.3** BE: Laplacian / LoG.
+- [x] **T6.4** FE: Edge panel (choose operator + parameters).
 
 ### 🟢 Phase 7 — Finishing (~1 day)
 - [ ] **T7.1** BE: `snippets.py` — return the OpenCV code for each operation.

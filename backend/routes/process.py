@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException
 
 from core import store
 from core.payload import build_payload
-from operations import arithmetic, color, histogram, restoration
+from operations import arithmetic, color, edges, histogram, morphology, restoration
 from schemas import ProcessRequest, ProcessResponse
 
 router = APIRouter()
@@ -40,6 +40,17 @@ OPERATIONS = {
     "max_filter": restoration.max_filter,
     "midpoint_filter": restoration.midpoint_filter,
     "wiener_deblur": restoration.wiener_deblur,
+    "dilate": morphology.dilate,
+    "erode": morphology.erode,
+    "opening": morphology.opening,
+    "closing": morphology.closing,
+    "threshold": morphology.threshold,
+    "sobel": edges.sobel,
+    "prewitt": edges.prewitt,
+    "roberts": edges.roberts,
+    "canny": edges.canny,
+    "laplacian": edges.laplacian,
+    "log": edges.log,
 }
 
 
