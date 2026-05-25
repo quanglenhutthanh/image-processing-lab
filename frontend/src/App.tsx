@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { getHealth, processImage } from "./api";
+import { getHealth, pngDataUrl, processImage } from "./api";
 import ChannelView from "./components/ChannelView";
+import CodeSnippet from "./components/CodeSnippet";
 import Histogram from "./components/Histogram";
 import OperationPanel from "./components/OperationPanel";
 import PixelMatrix from "./components/PixelMatrix";
 import ResultView from "./components/ResultView";
 import Uploader from "./components/Uploader";
-import type { ImagePayload, ImageStats, UploadResponse } from "./types";
+import type { ImagePayload, ImageStats, ProcessResponse, UploadResponse } from "./types";
 
 function Stats({ stats }: { stats: ImageStats }) {
   const items: [string, number][] = [
@@ -36,11 +37,16 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
+const toolbarBtn =
+  "rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40";
+
 function App() {
   const [backendOk, setBackendOk] = useState<boolean | null>(null);
   const [original, setOriginal] = useState<UploadResponse | null>(null);
   const [current, setCurrent] = useState<ImagePayload | null>(null);
-  const [note, setNote] = useState<string | null>(null);
+  const [lastOp, setLastOp] = useState<ProcessResponse | null>(null);
+  const [past, setPast] = useState<ImagePayload[]>([]); // for undo (T7.4)
+  const [trail, setTrail] = useState<string[]>([]); // applied-operation history
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -53,7 +59,9 @@ function App() {
   function loadImage(img: UploadResponse) {
     setOriginal(img);
     setCurrent(img);
-    setNote(null);
+    setLastOp(null);
+    setPast([]);
+    setTrail([]);
     setError(null);
   }
 
@@ -62,13 +70,39 @@ function App() {
     setBusy(true);
     try {
       const res = await processImage({ image_id: current.image_id, operation, params });
+      setPast((p) => [...p, current]);
+      setTrail((t) => [...t, operation]);
       setCurrent(res);
-      setNote(`${res.opencv_function} · ${res.lecture}`);
+      setLastOp(res);
     } catch (e) {
       setError(String(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  function undo() {
+    if (past.length === 0) return;
+    setCurrent(past[past.length - 1]);
+    setPast(past.slice(0, -1));
+    setTrail(trail.slice(0, -1));
+    setLastOp(null);
+  }
+
+  function reset() {
+    if (!original) return;
+    setCurrent(original);
+    setPast([]);
+    setTrail([]);
+    setLastOp(null);
+  }
+
+  function download() {
+    if (!current) return;
+    const a = document.createElement("a");
+    a.href = pngDataUrl(current.image_base64);
+    a.download = `result-${current.image_id.slice(0, 8)}.png`;
+    a.click();
   }
 
   const modified = !!(original && current && current.image_id !== original.image_id);
@@ -91,28 +125,21 @@ function App() {
       ) : (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setOriginal(null);
-                setCurrent(null);
-              }}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-            >
+            <button type="button" onClick={() => { setOriginal(null); setCurrent(null); }} className={toolbarBtn}>
               ← New image
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setCurrent(original);
-                setNote(null);
-              }}
-              disabled={busy}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
-            >
+            <button type="button" onClick={undo} disabled={busy || past.length === 0} className={toolbarBtn}>
+              Undo
+            </button>
+            <button type="button" onClick={reset} disabled={busy || !modified} className={toolbarBtn}>
               Reset
             </button>
-            {note && <span className="font-mono text-xs text-slate-400">{note}</span>}
+            <button type="button" onClick={download} className={toolbarBtn}>
+              Download
+            </button>
+            {trail.length > 0 && (
+              <span className="font-mono text-xs text-slate-400">{trail.join(" → ")}</span>
+            )}
             {original.resized && (
               <span className="text-xs text-amber-600">
                 resized from {original.original_width}×{original.original_height}
@@ -127,6 +154,16 @@ function App() {
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-4">
               <ResultView before={original.image_base64} after={current.image_base64} />
+              {lastOp && (
+                <Card title="OpenCV code">
+                  <CodeSnippet
+                    operation={lastOp.operation}
+                    lecture={lastOp.lecture}
+                    opencvFunction={lastOp.opencv_function}
+                    code={lastOp.code_snippet}
+                  />
+                </Card>
+              )}
               <Card title="Histogram (before / after)">
                 <div className="grid grid-cols-2 gap-3">
                   <div>

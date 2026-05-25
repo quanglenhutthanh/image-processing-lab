@@ -11,7 +11,7 @@ Tracking against the phases in [`prd.md`](./prd.md).
 | 4 | Denoise & restoration (L7) | ✅ Done — 2026-05-24 |
 | 5 | Morphology (L8) | ✅ Done — 2026-05-25 |
 | 6 | Edge detection (L9) | ✅ Done — 2026-05-25 |
-| 7 | Finishing | ⬜ Not started |
+| 7 | Finishing | ✅ Done — 2026-05-25 |
 
 ---
 
@@ -190,8 +190,29 @@ All feature phases (1-6) complete: representation, arithmetic/logic, histogram/
 channels, restoration, morphology, edges. Remaining: **Phase 7 (finishing)** —
 code-snippet UI, result download, README, end-to-end polish.
 
-## Next up — Phase 7 (Finishing)
-- BE: `core/snippets.py` (centralize per-op snippets, currently inline in ops)
-- FE: CodeSnippet component (show snippet + lecture label), download result
-- README run instructions (root README already covers this), E2E pass
-- (Nice to have) multi-op pipeline + undo/history
+## Phase 7 — Finishing ✅ (2026-05-25)
+
+- [x] **T7.1** OpenCV code per op — kept **inline/dynamic** (real params), not a
+  static `core/snippets.py` (a static module would duplicate and lose accuracy)
+- [x] **T7.2** FE CodeSnippet component (lecture badge + fn name + copy button)
+- [x] **T7.3** FE Download result (data-URL `<a download>`)
+- [x] **T7.4** FE undo/history (past-state stack + operation trail) — nice-to-have
+- [x] **T7.5** README features + run instructions
+- [x] **T7.6** End-to-end test of all operations + UI polish
+
+**Verified**
+- E2E: all **35 ops × {color, grayscale} = 70 calls** return 200; no crashes
+- Error handling (DoD #4): unknown op→400, bad id→404, missing 2nd image→400,
+  bad upload ext→400, channels-on-gray→400, bad matrix channel→422
+- Full stack: backend `/health` 200, frontend `/` 200, `/samples` = 4
+- Frontend `npm run build` passes
+
+**Decision**
+- T7.1: no `core/snippets.py`. Each operation already returns a `code_snippet`
+  built with the actual parameter values used (e.g. `cv2.GaussianBlur(img, (5, 5), 0)`),
+  which is more accurate than a static template. The PRD §5.4 file is "proposed".
+
+## 🎉 Project complete — all phases (0-7) done
+Definition of Done (PRD §7) met: backend returns correct OpenCV result + matrix +
+histogram + stats; frontend shows before/after + matrix + histogram; lecture
+label + OpenCV snippet shown; bad inputs handled without crashing.

@@ -224,13 +224,13 @@ image-processing-lab/
 - [x] **T6.3** BE: Laplacian / LoG.
 - [x] **T6.4** FE: Edge panel (choose operator + parameters).
 
-### 🟢 Phase 7 — Finishing (~1 day)
-- [ ] **T7.1** BE: `snippets.py` — return the OpenCV code for each operation.
-- [ ] **T7.2** FE: CodeSnippet component (show code + lecture label).
-- [ ] **T7.3** FE: download the result image.
-- [ ] **T7.4** (Nice to have) multi-operation pipeline + undo/history.
-- [ ] **T7.5** Write README: how to run backend + frontend.
-- [ ] **T7.6** Polish the UI, end-to-end test all operations.
+### ✅ Phase 7 — Finishing (~1 day) — **DONE**
+- [x] **T7.1** BE: OpenCV code for each operation (returned inline per-op with real params, not a static `snippets.py`).
+- [x] **T7.2** FE: CodeSnippet component (show code + lecture label).
+- [x] **T7.3** FE: download the result image.
+- [x] **T7.4** (Nice to have) multi-operation pipeline + undo/history.
+- [x] **T7.5** Write README: how to run backend + frontend.
+- [x] **T7.6** Polish the UI, end-to-end test all operations.
 
 ---
 
