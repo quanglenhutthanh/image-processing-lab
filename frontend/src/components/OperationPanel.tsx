@@ -20,6 +20,15 @@ const TWO_IMAGE: { op: string; label: string }[] = [
   { op: "bitwise_xor", label: "XOR" },
 ];
 
+const FILTERS: { op: string; label: string }[] = [
+  { op: "mean_filter", label: "Mean" },
+  { op: "gaussian_blur", label: "Gaussian" },
+  { op: "median_filter", label: "Median" },
+  { op: "min_filter", label: "Min" },
+  { op: "max_filter", label: "Max" },
+  { op: "midpoint_filter", label: "Midpoint" },
+];
+
 type Props = {
   current: ImagePayload;
   busy: boolean;
@@ -47,6 +56,11 @@ export default function OperationPanel({ current, busy, onApply, onError }: Prop
 
   const [samples, setSamples] = useState<SampleInfo[]>([]);
   const [second, setSecond] = useState<UploadResponse | null>(null);
+
+  const [noiseSigma, setNoiseSigma] = useState(25);
+  const [spAmount, setSpAmount] = useState(0.05);
+  const [filterOp, setFilterOp] = useState("mean_filter");
+  const [ksize, setKsize] = useState(3);
 
   useEffect(() => {
     listSamples().then(setSamples).catch(() => {});
@@ -213,6 +227,79 @@ export default function OperationPanel({ current, busy, onApply, onError }: Prop
             </button>
           ))}
         </div>
+      </Section>
+
+      <Section title="Restoration (L7)">
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          σ
+          <input
+            type="range"
+            min={0}
+            max={80}
+            step={1}
+            value={noiseSigma}
+            onChange={(e) => setNoiseSigma(Number(e.target.value))}
+          />
+          <span className="w-8 font-mono">{noiseSigma}</span>
+        </label>
+        <button type="button" disabled={busy} onClick={() => onApply("gaussian_noise", { sigma: noiseSigma })} className={primaryBtn}>
+          Gaussian noise
+        </button>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          density
+          <input
+            type="range"
+            min={0.01}
+            max={0.3}
+            step={0.01}
+            value={spAmount}
+            onChange={(e) => setSpAmount(Number(e.target.value))}
+          />
+          <span className="w-10 font-mono">{spAmount.toFixed(2)}</span>
+        </label>
+        <button type="button" disabled={busy} onClick={() => onApply("salt_pepper_noise", { amount: spAmount })} className={primaryBtn}>
+          Salt &amp; Pepper
+        </button>
+      </Section>
+
+      <Section title="Filters (L7)">
+        <select
+          value={filterOp}
+          onChange={(e) => setFilterOp(e.target.value)}
+          className="rounded border border-slate-300 px-2 py-1 text-sm text-slate-600"
+        >
+          {FILTERS.map((f) => (
+            <option key={f.op} value={f.op}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          kernel
+          <input
+            type="range"
+            min={3}
+            max={15}
+            step={2}
+            value={ksize}
+            onChange={(e) => setKsize(Number(e.target.value))}
+          />
+          <span className="w-12 font-mono">
+            {ksize}×{ksize}
+          </span>
+        </label>
+        <button type="button" disabled={busy} onClick={() => onApply(filterOp, { ksize })} className={primaryBtn}>
+          Apply filter
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onApply("wiener_deblur", { psf_size: 5, balance: 0.1 })}
+          className={primaryBtn}
+        >
+          Wiener deblur
+        </button>
+        <span className="text-xs text-slate-400">(assumed PSF)</span>
       </Section>
     </div>
   );

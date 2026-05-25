@@ -205,12 +205,12 @@ image-processing-lab/
 - [x] **T3.5** FE: OperationPanel Arithmetic group (slider + overflow toggle).
 - [x] **T3.6** FE: display before/after matrix to see the numbers change.
 
-### 🟢 Phase 4 — Denoise & restoration (L7, ~1.5 days)
-- [ ] **T4.1** BE: add Gaussian & S&P noise (`operations/restoration.py`).
-- [ ] **T4.2** BE: mean/Gaussian/median filter (choose kernel).
-- [ ] **T4.3** BE: min/max/midpoint order-statistic.
-- [ ] **T4.4** BE: Wiener deblur (scikit-image).
-- [ ] **T4.5** FE: Restoration panel (add-noise buttons, filter selector + kernel size slider).
+### ✅ Phase 4 — Denoise & restoration (L7, ~1.5 days) — **DONE**
+- [x] **T4.1** BE: add Gaussian & S&P noise (`operations/restoration.py`).
+- [x] **T4.2** BE: mean/Gaussian/median filter (choose kernel).
+- [x] **T4.3** BE: min/max/midpoint order-statistic.
+- [x] **T4.4** BE: Wiener deblur (scikit-image).
+- [x] **T4.5** FE: Restoration panel (add-noise buttons, filter selector + kernel size slider).
 
 ### 🟢 Phase 5 — Morphology (L8, ~1 day)
 - [ ] **T5.1** BE: `operations/morphology.py` — dilate/erode/open/close.

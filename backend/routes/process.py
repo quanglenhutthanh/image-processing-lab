@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException
 
 from core import store
 from core.payload import build_payload
-from operations import arithmetic, color, histogram
+from operations import arithmetic, color, histogram, restoration
 from schemas import ProcessRequest, ProcessResponse
 
 router = APIRouter()
@@ -31,6 +31,15 @@ OPERATIONS = {
     "bitwise_and": arithmetic.bitwise_and,
     "bitwise_or": arithmetic.bitwise_or,
     "bitwise_xor": arithmetic.bitwise_xor,
+    "gaussian_noise": restoration.gaussian_noise,
+    "salt_pepper_noise": restoration.salt_pepper_noise,
+    "mean_filter": restoration.mean_filter,
+    "gaussian_blur": restoration.gaussian_blur,
+    "median_filter": restoration.median_filter,
+    "min_filter": restoration.min_filter,
+    "max_filter": restoration.max_filter,
+    "midpoint_filter": restoration.midpoint_filter,
+    "wiener_deblur": restoration.wiener_deblur,
 }
 
 

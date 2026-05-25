@@ -8,7 +8,7 @@ Tracking against the phases in [`prd.md`](./prd.md).
 | 1 | Image & matrix (core) | ✅ Done — 2026-05-24 |
 | 2 | Histogram & RGB channels | ✅ Done — 2026-05-24 |
 | 3 | Arithmetic & logic (L5) | ✅ Done — 2026-05-24 |
-| 4 | Denoise & restoration (L7) | ⬜ Not started |
+| 4 | Denoise & restoration (L7) | ✅ Done — 2026-05-24 |
 | 5 | Morphology (L8) | ⬜ Not started |
 | 6 | Edge detection (L9) | ⬜ Not started |
 | 7 | Finishing | ⬜ Not started |
@@ -117,7 +117,31 @@ Tracking against the phases in [`prd.md`](./prd.md).
 Upload → matrix → RGB/channels → histogram → arithmetic (PRD §7). Remaining:
 Phase 4 (restoration), 5 (morphology), 6 (edges), 7 (snippets/download/README).
 
-## Next up — Phase 4 (Denoise & restoration, L7)
-- BE: Gaussian & S&P noise, mean/Gaussian/median filter, min/max/midpoint,
-  Wiener deblur (`operations/restoration.py`)
-- FE: Restoration panel (add-noise buttons, filter selector + kernel slider)
+## Phase 4 — Denoise & restoration (L7) ✅ (2026-05-24)
+
+- [x] **T4.1** BE Gaussian noise (mean/sigma) + salt & pepper (density) — `operations/restoration.py`
+- [x] **T4.2** BE mean (`cv2.blur`), Gaussian (`cv2.GaussianBlur`), median (`cv2.medianBlur`); odd kernel enforced
+- [x] **T4.3** BE min (`cv2.erode`), max (`cv2.dilate`), midpoint order-statistic filters
+- [x] **T4.4** BE Wiener deblur (`skimage.restoration.wiener`, assumed PSF; per-channel for color)
+- [x] **T4.5** FE Restoration + Filters sections in OperationPanel (noise sliders, filter selector + kernel slider, Wiener)
+
+**Process ops added:** `gaussian_noise`, `salt_pepper_noise`, `mean_filter`,
+`gaussian_blur`, `median_filter`, `min_filter`, `max_filter`, `midpoint_filter`, `wiener_deblur`.
+
+**Verified (TestClient)**
+- Gaussian noise std 0→30 (matches sigma); S&P injects 0/255
+- L7 point: on S&P, **median std 1.4 vs mean 13.39** (median wins); Gaussian
+  blur cuts Gaussian-noise std 30→8
+- min/max/midpoint map to erode/dilate; even kernel (4) forced to 5
+- Wiener works on grayscale (1ch) and color (3ch); "assumed PSF" noted in snippet
+- Frontend `npm run build` passes
+
+**Notes**
+- Wiener uses an assumed flat PSF (true PSF unknown) — flagged in the snippet and
+  with an "(assumed PSF)" hint in the UI (PRD §8).
+- Noise is freshly randomized each click (no seed) so repeated clicks differ.
+
+## Next up — Phase 5 (Morphology, L8)
+- BE: dilate/erode/open/close, structuring element (square/rect/ellipse/cross +
+  size), binary threshold (`operations/morphology.py`)
+- FE: Morphology panel (SE shape + size)
